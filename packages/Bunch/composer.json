@@ -1,0 +1,19 @@
+{
+    "name": "evident/bunch",
+    "require": {
+        "php": "^8.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "Evident\\Bunch\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Evident\\Bunch\\Tests\\": "tests"
+        }
+    },
+    "replace": {
+        "evident/bunch": "self.version"
+    }
+}

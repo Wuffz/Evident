@@ -1,0 +1,52 @@
+{
+    "name": "hexxore/evident",
+    "authors": [
+        {
+            "name": "Patrick Roozeboom",
+            "email": "proozeboom91@gmail.com"
+        }
+    ],
+    "require": {
+        "php": "^8.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "Evident\\": "src/",
+            "Evident\\Bunch\\": "packages/Bunch/src",
+            "Evident\\Expressio\\": "packages/Expressio/src",
+            "Evident\\Matter\\": [
+                "packages/Matter/src",
+                "packages/Matter/src/src"
+            ]
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Evident\\Bunch\\Tests\\": "packages/Bunch/tests",
+            "Evident\\Expressio\\Tests\\": "packages/Expressio/tests",
+            "Evident\\Matter\\Tests\\": [
+                "packages/Matter/src/tests",
+                "packages/Matter/tests"
+            ]
+        }
+    },
+    "scripts": {
+        "merge": [
+            "vendor/bin/monorepo-builder validate",
+            "vendor/bin/monorepo-builder merge"
+        ],
+        "test": [
+            "vendor/bin/phpunit"
+        ],
+        "bump-version": "composer merge"
+    },
+    "replace": {
+        "evident/bunch": "self.version",
+        "evident/expressio": "self.version",
+        "evident/matter": "self.version"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9",
+        "symplify/monorepo-builder": "11.2.2.72"
+    }
+}
