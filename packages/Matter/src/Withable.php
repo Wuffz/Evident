@@ -2,6 +2,8 @@
 
 namespace Evident\Matter;
 
+use ReflectionClass;
+
 trait Withable
 {
     /**

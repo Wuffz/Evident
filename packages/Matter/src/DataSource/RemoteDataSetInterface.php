@@ -27,7 +27,6 @@ interface RemoteDataSetInterface extends QueryableInterface
      * Make sure the Queryable has a connection to execute its queries to.
      *
      * @param mixed $connection
-     * 
      * @return void
      * 
      */

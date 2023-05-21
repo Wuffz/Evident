@@ -3,6 +3,7 @@
 namespace Evident\Matter\Driver\PDO;
 
 use Closure;
+use Iterator;
 use Evident\Expressio\Expression;
 use Evident\Expressio\Transpiler\AnsiSqlTranspilation;
 use Evident\Expressio\Transpiler\AnsiSqlTranspiler;
@@ -14,9 +15,9 @@ use PDO;
 use PDOStatement;
 
 /**
- * Represents a single table for query building.
+ * Represents a single table for query building, is immutable
  */
-class DataSet implements RemoteDataSetInterface
+class RemoteDataSet implements RemoteDataSetInterface
 {
     use Withable;
     private $local_name;
@@ -72,8 +73,11 @@ class DataSet implements RemoteDataSetInterface
      * @return void
      * 
      */
-    public function setConnection(PDO $pdo): void
+    public function setConnection(mixed $pdo): void
     {
+        if ( !$pdo instanceof PDO ) {
+            throw new Exception('Expected PDO instance');
+        }
         $this->pdo = $pdo;
     }
 
@@ -81,7 +85,7 @@ class DataSet implements RemoteDataSetInterface
     public function filter(Closure $expr): self
     {
         $expression = new Expression($expr);
-        return $this->withProperty('filters', $this->filters + $expression);
+        return $this->withProperty('filters', $this->filters ?? []  + [ $expression ] );
 
     }
     public function skip(int $count): self
@@ -114,30 +118,33 @@ class DataSet implements RemoteDataSetInterface
         return $transpilation;
 
     }
-    private function getSelectPdoStatement($context = []): PDOStatement
+    private function getSelectPdoStatement($context = [], $select = '*'): PDOStatement
     {
-        $query = 'select * from ' . $this->getRemoteName();
+        $query = 'select '.$select.' from ' . $this->getRemoteName();
         $bindings = [];
 
-        if (count($this->filters) > 0) {
+        if (count($this->filters ?? []) > 0) {
             $where = $this->getWhereTranspilation();
             $bindings = $bindings + $where->bindings;
             $query .= ' WHERE ' . $where->statement;
         }
 
-        if ($this->take !== null) {
+        if ($this->take ?? null !== null) {
             $query .= ' LIMIT ' . $this->take;
         }
 
-        if ($this->skip !== null) {
+        if ($this->skip ?? null !== null) {
             $query .= ' OFFSET ' . $this->skip;
         }
-
-
-        $stmt = $this->pdo->prepare($query, [PDO::ATTR_CURSOR => PDO::CURSOR_SCROLL]);
+        
+        $stmt = $this->pdo->prepare($query);
+        if ( $stmt === false ) {
+            throw new Exception('failed to prepare statement');
+        }
         foreach ($bindings as $binding => $value) {
             $stmt->bindParam($binding, $value, is_int($value) ? PDO::PARAM_INT : PDO::PARAM_STR);
         }
+        
         return $stmt;
 
     }
@@ -153,10 +160,15 @@ class DataSet implements RemoteDataSetInterface
      * 
      */
     public function first(?Closure $expr = null): object
-    {
+    {   
+        if ( $expr instanceof Closure ) {
+            $stmt = $this->filter($expr)->take(1)->getSelectPdoStatement();
+        } else {
+            $stmt = $this->take(1)->getSelectPdoStatement();
+        }
         // actual fetching using filters, take and skip
-        $stmt = $this->filter($expr)->take(1)->getSelectPdoStatement();
-        return $stmt->fetchObject(PDO::FETCH_CLASS);
+        $stmt->execute();
+        return $stmt->fetchObject();
     }
     public function last(?Closure $expr = null): mixed
     {
@@ -168,8 +180,13 @@ class DataSet implements RemoteDataSetInterface
         $stmt = $this->getSelectPdoStatement();
         return new RecordSet($stmt->fetchAll(PDO::FETCH_CLASS | PDO::FETCH_OBJ));
     }
+    public function count(): int 
+    {
+        $stmt = $this->getSelectPdoStatement([], 'COUNT(*) as count' );
+        return new RecordSet($stmt->fetchColumn('count'));
+    }
 
-    public function combine(DataSetInterface $dataset, Closure $expr): RemoteDataSetInterface
+    /* public function combine(DataSetInterface $dataset, Closure $expr): self
     {
 
         throw new \Exception('To be implemented.');
@@ -178,22 +195,30 @@ class DataSet implements RemoteDataSetInterface
             // use the remote source to do the combining and mapping    
         } else {
             $this->all()->
-        }*/.
+        }*
 
 
         // determine if the datasources are the same, otherwise get both datasets and combine locally.
-    }
-    public function map(Closure $expression): RemoteDataSetInterface
+    } */
+    public function map(Closure $expression): self
     {
         // basically an aggregated select here
     }
-    public function groupBy(Closure $expression): RemoteDataSetInterface
+    public function groupBy(Closure $expression): self
     {
 
     }
-    public function getQueryable(): RemoteDataSetInterface
+    public function getQueryable(): self
     {
-
+        return $this;    
+    }
+    public function getEnumerator() : RecordSet 
+    {
+        return $this->all();
+    }
+    public function getIterator(): Iterator
+    {
+        return $this->getEnumerator();
     }
 
 }

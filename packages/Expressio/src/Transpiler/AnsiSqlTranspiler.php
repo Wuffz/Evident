@@ -85,7 +85,7 @@ class AnsiSqlTranspiler implements TranspilerInterface
             if (method_exists($this, $fn)) {
                 return $this->{$fn}($node);
             } else {
-                throw new \RuntimeException("$fn is not supported in " . self::class . ' ' . (string) $node);
+                throw new \RuntimeException("$fn is not supported in " . self::class . ' ' . var_export($node, true));
             }
         }
     }
@@ -185,6 +185,12 @@ class AnsiSqlTranspiler implements TranspilerInterface
         return '( ' . $this->transpileNode($n->left) . ' OR ' . $this->transpileNode($n->right) . ' )';
     }
 
+    private function transpileScalarString(Node $n): string
+    {
+      
+    
+        return '"' . $n->value . '"';
+    }
 
     private function transpileExprConstFetch(Node $n): string
     {

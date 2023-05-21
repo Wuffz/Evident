@@ -27,7 +27,7 @@ class Driver implements DriverInterface
      */
     public function from(string $table): RemoteDataSetInterface
     {
-        $dataset = new DataSet();
+        $dataset = new RemoteDataSet();
         $dataset->setLocalName($table);
         $dataset->setConnection($this->pdo);
         return $dataset;
