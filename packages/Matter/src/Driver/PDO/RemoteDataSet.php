@@ -10,7 +10,8 @@ use Evident\Expressio\Transpiler\AnsiSqlTranspiler;
 use Evident\Expressio\Transpiler\TranspilationInterface;
 use Evident\Matter\DataSource\RecordSetInterface;
 use Evident\Matter\DataSource\RemoteDataSetInterface;
-use Evident\Matter\Withable;
+use Evident\Matter\Utilities\Withable;
+use Exception;
 use PDO;
 use PDOStatement;
 
@@ -21,6 +22,7 @@ class RemoteDataSet implements RemoteDataSetInterface
 {
     use Withable;
     private $local_name;
+    private $remote_name;
 
     /**
      * @var \Evident\Expressio\Expression[]
@@ -63,7 +65,19 @@ class RemoteDataSet implements RemoteDataSetInterface
     public function getRemoteName(): string
     {
         // for now.
-        return $this->local_name;
+        return $this->remote_name ?? $this->local_name;
+    }
+    /**
+     * set the remote entity name, eg table name
+     *
+     * @param string $name
+     * 
+     * @return void
+     * 
+     */
+    public function setRemoteName($name): void 
+    {
+        $this->remote_name = $name;
     }
     /**
      * Set the current pdo connection
@@ -86,7 +100,6 @@ class RemoteDataSet implements RemoteDataSetInterface
     {
         $expression = new Expression($expr);
         return $this->withProperty('filters', $this->filters ?? []  + [ $expression ] );
-
     }
     public function skip(int $count): self
     {
@@ -118,8 +131,7 @@ class RemoteDataSet implements RemoteDataSetInterface
         return $transpilation;
 
     }
-    private function getSelectPdoStatement($context = [], $select = '*'): PDOStatement
-    {
+    private function buildQuery($context = [], $select = '*'): array {
         $query = 'select '.$select.' from ' . $this->getRemoteName();
         $bindings = [];
 
@@ -136,7 +148,12 @@ class RemoteDataSet implements RemoteDataSetInterface
         if ($this->skip ?? null !== null) {
             $query .= ' OFFSET ' . $this->skip;
         }
+        return [$query, $bindings];
+    }
+    private function getSelectPdoStatement($context = [], $select = '*'): PDOStatement
+    {
         
+        list($query, $bindings) = $this->buildQuery($context, $select);
         $stmt = $this->pdo->prepare($query);
         if ( $stmt === false ) {
             throw new Exception('failed to prepare statement');
@@ -178,13 +195,24 @@ class RemoteDataSet implements RemoteDataSetInterface
     public function all(): RecordSetInterface
     {
         $stmt = $this->getSelectPdoStatement();
-        return new RecordSet($stmt->fetchAll(PDO::FETCH_CLASS | PDO::FETCH_OBJ));
+        return new RecordSet($stmt->fetchAll(PDO::FETCH_CLASS | PDO::FETCH_OBJ),$this->pdo);
     }
     public function count(): int 
     {
         $stmt = $this->getSelectPdoStatement([], 'COUNT(*) as count' );
-        return new RecordSet($stmt->fetchColumn('count'));
+        return new $stmt->fetchColumn(0);
     }
+
+
+
+
+    /* public function combine(DataSetInterface $dataset, Closure $expr): self
+    public function map(Closure $expression): self
+    public function groupBy(Closure $expression): self
+    public function getQueryable(): self
+    public function getEnumerator() : RecordSet 
+    public function getIterator(): Iterator
+    public function debugInfo(): array 
 
     /* public function combine(DataSetInterface $dataset, Closure $expr): self
     {
@@ -221,4 +249,8 @@ class RemoteDataSet implements RemoteDataSetInterface
         return $this->getEnumerator();
     }
 
+    public function debugInfo(): array 
+    {
+        return $this->buildQuery();
+    }
 }

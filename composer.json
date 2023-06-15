@@ -7,6 +7,8 @@
         }
     ],
     "require": {
+        "cakephp/utility": "^4.4",
+        "nikic/php-parser": "^4.15",
         "php": "^8.1"
     },
     "autoload": {
@@ -31,6 +33,12 @@
         }
     },
     "scripts": {
+        "pre-install-cmd": [
+            "@merge"
+        ],
+        "pre-update-cmd": [
+            "@merge"
+        ],
         "merge": [
             "vendor/bin/monorepo-builder validate",
             "vendor/bin/monorepo-builder merge"
@@ -38,7 +46,13 @@
         "test": [
             "vendor/bin/phpunit"
         ],
-        "bump-version": "composer merge"
+        "check-all": [
+            "@test"
+        ],
+        "bump-version": [
+            "@test",
+            "@merge"
+        ]
     },
     "replace": {
         "evident/bunch": "self.version",

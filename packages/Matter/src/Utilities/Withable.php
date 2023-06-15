@@ -1,6 +1,6 @@
 <?php
 
-namespace Evident\Matter;
+namespace Evident\Matter\Utilities;
 
 use ReflectionClass;
 

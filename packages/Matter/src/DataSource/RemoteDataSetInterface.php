@@ -31,4 +31,6 @@ interface RemoteDataSetInterface extends QueryableInterface
      * 
      */
     public function setConnection(mixed $connection): void;
+
+    public function debugInfo(): array;
 }

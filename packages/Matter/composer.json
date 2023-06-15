@@ -1,7 +1,9 @@
 {
     "name": "evident/matter",
     "require": {
-        "php": "^8.1"
+        "php": "^8.1",
+        "cakephp/utility": "^4.4",
+        "nikic/php-parser": "^4.15"
     },
     "autoload": {
         "psr-4": {
@@ -15,8 +17,5 @@
     },
     "replace": {
         "evident/matter": "self.version"
-    },
-    "required": {
-        "nikic/php-parser": "^4.15"
     }
 }
