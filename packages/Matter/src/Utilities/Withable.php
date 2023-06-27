@@ -12,11 +12,12 @@ trait Withable
      *
      * @param mixed $property
      * @param mixed $value
+     * @param ?Object $obj
      * 
      * @return self
      * 
      */
-    private function withProperty($property, $value): self
+    private function ObjectWithProperty(string $property, mixed z$value, $obj): self
     {
 
         $clone = clone $this;
@@ -42,6 +43,7 @@ trait Withable
 
         return $clone;
     }
+    
     protected function setProtectedPropertyValue($propertyName, $value)
     {
         $this->$propertyName = $value;

@@ -1,5 +1,6 @@
 <?php
 namespace Evident\Matter\Behaviour;
 interface NamingInterface {
-    public function tableFromEntity(String|Object $class): String;
+    public function getRemoteNameFromEntity(String|Object $class): String;
+    public function getRemoteNameForProperties(String|Object $class): array;
 }

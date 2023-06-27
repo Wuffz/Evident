@@ -7,8 +7,8 @@ namespace Evident\Matter\Tests\Resources\Entities;
  */
 class Album {
     // <AlbumID => ClassNameId or just Id as a convention >
-    private int $albumId;
+    private int $id;
     private string $title;
     // ClassNameId will be resolved to Artist::class?
-    private int $artistId; 
+    //private Artist $artist; 
 }

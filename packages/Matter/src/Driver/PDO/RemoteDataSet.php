@@ -8,6 +8,7 @@ use Evident\Expressio\Expression;
 use Evident\Expressio\Transpiler\AnsiSqlTranspilation;
 use Evident\Expressio\Transpiler\AnsiSqlTranspiler;
 use Evident\Expressio\Transpiler\TranspilationInterface;
+use Evident\Matter\Behaviour\NamingInterface;
 use Evident\Matter\DataSource\RecordSetInterface;
 use Evident\Matter\DataSource\RemoteDataSetInterface;
 use Evident\Matter\Utilities\Withable;
@@ -21,8 +22,12 @@ use PDOStatement;
 class RemoteDataSet implements RemoteDataSetInterface
 {
     use Withable;
-    private $local_name;
-    private $remote_name;
+    private String $local_name;
+    private String $remote_name;
+
+    private PDO $pdo;
+    private ?NamingInterface $naming;
+    private array $aliasses;
 
     /**
      * @var \Evident\Expressio\Expression[]
@@ -32,30 +37,21 @@ class RemoteDataSet implements RemoteDataSetInterface
     private int $skip;
     private int $take;
 
-    private PDO $pdo;
-    /**
-     * set the local entity name, eg entity name
-     *
-     * @param string $name
-     * 
-     * @return void
-     * 
-     */
-    public function setLocalName(string $name): void
-    {
-        $this->local_name = $name;
+    
+    public function __construct(
+        PDO $connection,
+        String $entity,
+        ?NamingInterface $naming,
+    ) {
+        $this->pdo = $connection;
+        $this->local_name = $entity;
+        if ( $naming ) {
+            $this->naming = $naming;
+            $this->remote_name = $this->naming->getRemoteNameFromEntity($entity);
+            $this->aliasses = $this->naming->getRemoteNameForProperties($entity) 
+                            + [ $this->local_name => $this->remote_name ];
+        }
     }
-    /**
-     * get the local name e.g. entity name
-     *
-     * @return string
-     * 
-     */
-    public function getLocalName(): string
-    {
-        return $this->local_name;
-    }
-
     /**
      * string version of the remote dataset name ( e.g. table name )
      *
@@ -67,34 +63,6 @@ class RemoteDataSet implements RemoteDataSetInterface
         // for now.
         return $this->remote_name ?? $this->local_name;
     }
-    /**
-     * set the remote entity name, eg table name
-     *
-     * @param string $name
-     * 
-     * @return void
-     * 
-     */
-    public function setRemoteName($name): void 
-    {
-        $this->remote_name = $name;
-    }
-    /**
-     * Set the current pdo connection
-     *
-     * @param PDO $pdo
-     * 
-     * @return void
-     * 
-     */
-    public function setConnection(mixed $pdo): void
-    {
-        if ( !$pdo instanceof PDO ) {
-            throw new Exception('Expected PDO instance');
-        }
-        $this->pdo = $pdo;
-    }
-
     // querying capabilities
     public function filter(Closure $expr): self
     {
@@ -111,19 +79,21 @@ class RemoteDataSet implements RemoteDataSetInterface
     }
     private function getWhereTranspilation(array $aliasses = []): AnsiSqlTranspilation
     {
-
         // compile multiple into one transpilation
         $statements = [];
         $bindings = [];
-
+        
         $transpiler = new AnsiSqlTranspiler();
+        $aliasses += $this->aliasses;
         $transpiler->setAliasses($aliasses);
+        //dd($transpiler);
+        
         foreach ($this->filters as $expr) {
             $expr = $transpiler->transpile($expr);
             $statements[] = ' ( ' . $expr->statement . ' ) ';
             $bindings = $bindings + $expr->bindings;
         }
-
+        
         $statement = implode(" && ", $statements);
         $transpilation = new AnsiSqlTranspilation();
         $transpilation->statement = $statement;
@@ -152,7 +122,6 @@ class RemoteDataSet implements RemoteDataSetInterface
     }
     private function getSelectPdoStatement($context = [], $select = '*'): PDOStatement
     {
-        
         list($query, $bindings) = $this->buildQuery($context, $select);
         $stmt = $this->pdo->prepare($query);
         if ( $stmt === false ) {
@@ -163,7 +132,6 @@ class RemoteDataSet implements RemoteDataSetInterface
         }
         
         return $stmt;
-
     }
     /**
      * Fetch the first occurence in query
@@ -190,7 +158,7 @@ class RemoteDataSet implements RemoteDataSetInterface
     public function last(?Closure $expr = null): mixed
     {
         $stmt = $this->filter($expr)->take(1)->getSelectPdoStatement();
-        return $stmt->fetch(PDO::FETCH_NUM, PDO::FETCH_ORI_LAST);
+        return $stmt->fetch(PDO::FETCH_OBJ, PDO::FETCH_ORI_LAST);
     }
     public function all(): RecordSetInterface
     {
@@ -199,8 +167,9 @@ class RemoteDataSet implements RemoteDataSetInterface
     }
     public function count(): int 
     {
-        $stmt = $this->getSelectPdoStatement([], 'COUNT(*) as count' );
-        return new $stmt->fetchColumn(0);
+        $res = $this->getSelectPdoStatement([], 'COUNT(*) as count' );
+        $res->execute();
+        return $res->fetchColumn();
     }
 
 
@@ -252,5 +221,14 @@ class RemoteDataSet implements RemoteDataSetInterface
     public function debugInfo(): array 
     {
         return $this->buildQuery();
+    }
+    public function debug(): void 
+    {
+        if (function_exists('dd') ){
+            dd($this->debugInfo());
+        } else {
+            var_dump($this->debugInfo());
+            die();
+        }
     }
 }

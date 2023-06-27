@@ -27,14 +27,18 @@ class Driver implements DriverInterface
      * @return RemoteDataSetInterface
      * 
      */
-    public function from(string $tableOrEntityClass): RemoteDataSetInterface
+    public function from(string $entity): RemoteDataSetInterface
     {
         // do detection on table or entity here
-        $dataset = new RemoteDataSet();
-        $remote = $this->naming->tableFromEntity($tableOrEntityClass);
-        $dataset->setLocalName($tableOrEntityClass);
-        $dataset->setRemoteName($remote ?? $tableOrEntityClass);
-        $dataset->setConnection($this->pdo);
+        $dataset = new RemoteDataSet(
+            $this->pdo,
+            $entity,
+            $this->naming,
+        );
+        
+        // $dataset->setLocalName($tableOrEntityClass);
+        //$dataset->setRemoteName($remote ?? $tableOrEntityClass);
+        //$dataset->setConnection($this->pdo, $this->naming);
         return $dataset;
     }
 }

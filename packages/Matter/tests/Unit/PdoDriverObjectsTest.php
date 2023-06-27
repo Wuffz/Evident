@@ -40,31 +40,47 @@ final class PdoDriverObjectsTest extends TestCase
         $f = $this->albums->first();
         $this->assertEquals(1, $f->AlbumId);
     }
-    public function testGetWhere()
+    public function TestPrepareStatementsDirectInputScalarVersusVeriable() 
+    {
+        $input = 'Big Ones';
+        $f = $this->albums->filter(fn(Album $a) => $a->title == 'Big Ones' && $a->title == $input)->debugInfo();
+        foreach ( $f[1] as $key => $value ) {
+            
+            $this->assertMatchesRegularExpression('/'.$key.'/', $f[0]);
+            $this->assertEquals($f[1][$key], $value);
+        }
+        
+    }
+    
+    public function testGetWhereByNameEntity()
     {
         // fails on $n => n.Title, no context to db name is given.
         // Use full table names, this works always, for conventions we should be able to disable this.
         // Or at least in default, singularize. there's no need for trial and error when configuration is ok.
         // all depends on default conventions
         $f = $this->artists->filter(fn($artists) => $artists->Name == 'Godsmack')->first();
-        
-        // fetching, and running the filter using on the full recordset would by silly.
-        $f = $this->albums->filter(fn(Album $a) => $a->Title == 'Big Ones')->first();
-        $this->assertEquals(5, $f->AlbumId);
+        $this->assertEquals($f->ArtistId, 87);
     }
+    public function testGetWhereByNameEntityAndProperty()
+    {
+         // when in the convention, it should translate a.title to albums.Title
+         // also should remap the albums.AlbumId to $f->id
+         $f = $this->albums->filter(fn(Album $a) => $a->title == 'Big Ones')->first();
 
-    // public function testSetLocalName() {
-        
-    // }
-    // public function testGetLocalName() {
+         // we do get an actual stdClass, but it's not hydrated into the entity
+         $this->assertEquals(5, $f->id);
+         
+    }
+    public function testScalarsWithDoubleNames() {
+        // make 2 where's with different input values, but same input name, check if collide
+    }
+    public function testLeftJoin()
+    {
+        $f = $this->albums->leftJoin(fn(Album $a, Artist $ar) => $a->id == $ar->id )->all();
+        // we need a short syntax ?
+        $f = $this->albums->join(fn($a, Artist $b ) => $a < $b );
 
-    // }
-    // public function testGetRemoteName() {
-
-    // }
-    // public function testSetConnection(){
-
-    // }
+    }
     // public function testFilter(){
 
     // }

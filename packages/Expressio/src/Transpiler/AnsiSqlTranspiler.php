@@ -187,8 +187,6 @@ class AnsiSqlTranspiler implements TranspilerInterface
 
     private function transpileScalarString(Node $n): string
     {
-      
-    
         return '"' . $n->value . '"';
     }
 
