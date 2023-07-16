@@ -1,6 +1,8 @@
 <?php
 
-namespace Evident\Matter;
+namespace Evident\Matter\Utilities;
+
+use ReflectionClass;
 
 trait Withable
 {
@@ -10,11 +12,12 @@ trait Withable
      *
      * @param mixed $property
      * @param mixed $value
+     * @param ?Object $obj
      * 
      * @return self
      * 
      */
-    private function withProperty($property, $value): self
+    private function ObjectWithProperty(string $property, mixed $value, $obj): self
     {
 
         $clone = clone $this;
@@ -40,6 +43,7 @@ trait Withable
 
         return $clone;
     }
+    
     protected function setProtectedPropertyValue($propertyName, $value)
     {
         $this->$propertyName = $value;
@@ -58,9 +62,11 @@ trait Withable
     {
         $target = $this;
         foreach ($properties as $property => $value) {
-            $target = $target->withProperty($property, $value);
+            $target = $this->ObjectWithProperty($property, $value, $this);
         }
         return $target;
     }
-
+    private function withProperty($var, $val) {
+        return $this->ObjectWithProperty($var, $val, $this);
+    }
 }

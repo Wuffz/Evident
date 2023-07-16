@@ -6,6 +6,8 @@ use Evident\Bunch\Collection;
 use Evident\Matter\DataSource\RecordSetInterface;
 use PDO;
 
+// represents the entities in a recordset, extends on Collection , is mutable
+// @todo: should this also be a basic Repository pattern ? or should it use an entity manager?
 class RecordSet extends Collection implements RecordSetInterface
 {
     private PDO $pdo;

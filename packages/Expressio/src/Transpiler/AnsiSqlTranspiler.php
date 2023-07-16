@@ -12,9 +12,14 @@ class AnsiSqlTranspiler implements TranspilerInterface
 {
     private array $aliasses = [];
     private array $bindings = [];
+    
+    private $antiColide = true;
 
     private ?Expression $expr;
 
+    public function disableAntiColide() {
+        $this->anticolide = false;
+    }
     /**
      * Setting aliasses array
      *
@@ -35,13 +40,26 @@ class AnsiSqlTranspiler implements TranspilerInterface
      * @return AnsiSqlTranspilation
      *
      */
-    public function transpile(Expression $expr): AnsiSqlTranspilation
+    public function transpile(Expression $expr, $remap = true): AnsiSqlTranspilation
     {
         $this->expr = $expr;
         $transpilation = new AnsiSqlTranspilation();
         $transpilation->statement = $this->transpileNode($this->expr->getReflection()->getAst());
         $transpilation->bindings = $this->bindings;
+        $this->antiColideBindings($transpilation);
+        
         return $transpilation;
+    }
+
+    public function antiColideBindings(&$transpilation) {
+        if ( !$this->antiColide ) return;
+
+        foreach ( $transpilation->bindings as $old => $value ) {
+            $new = ':'.base_convert(microtime(), 10, 36);
+            $transpilation->bindings[$new] = $value;
+            unset($transpilation->bindings[$old]);
+            $transpilation->statement = str_replace("$old", "$new", $transpilation->statement);
+        }
     }
 
     /**
@@ -85,7 +103,7 @@ class AnsiSqlTranspiler implements TranspilerInterface
             if (method_exists($this, $fn)) {
                 return $this->{$fn}($node);
             } else {
-                throw new \RuntimeException("$fn is not supported in " . self::class . ' ' . (string) $node);
+                throw new \RuntimeException("$fn is not supported in " . self::class . ' ' . var_export($node, true));
             }
         }
     }
@@ -185,6 +203,10 @@ class AnsiSqlTranspiler implements TranspilerInterface
         return '( ' . $this->transpileNode($n->left) . ' OR ' . $this->transpileNode($n->right) . ' )';
     }
 
+    private function transpileScalarString(Node $n): string
+    {
+        return '"' . $n->value . '"';
+    }
 
     private function transpileExprConstFetch(Node $n): string
     {

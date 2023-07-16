@@ -1,5 +1,5 @@
 <?php
-// This file is intended for manual IDE testing. No actual processable code is in here
+// This file is intended for manual IDE testing ( intellisense ). No actual processable code is in here
 
 use Bunch\Tests\Resources\Dog;
 use Evident\Bunch\Enumerator;

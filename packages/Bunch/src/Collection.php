@@ -81,4 +81,15 @@ class Collection extends Enumeration implements CollectionInterface, Enumeration
         $this->iterator = new ArrayIterator($keep);
         return $removed;
     }
+    
+    // not sure if we should keep this. 
+    // The entire library is focused on keeping things within a itterator for speed and memory optimisation
+    // Maybe we need to provide something else here for legacy systems.
+    public function toArray(): Array {
+        $array = [];
+        foreach ( $this->all() as $key => $value ) {
+            $array[$key] = $value;
+        }
+        return $array;
+    }
 }

@@ -31,3 +31,7 @@ class SqlExpresion___FILE___LINE {
 }
 ?>
 ```
+
+## Notes:
+ - After just taking a look, we could use mtime of the file, that would even prevent use of reflection. 
+   Could there by anything else to be faster than that?

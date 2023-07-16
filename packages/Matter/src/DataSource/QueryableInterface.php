@@ -3,7 +3,7 @@
 namespace Evident\Matter\DataSource;
 
 use Evident\Bunch\EnumerationInterface;
-
+use Closure;
 /**
  * @template T
  */
@@ -25,7 +25,7 @@ interface QueryableInterface extends EnumerationInterface
      * @param int $count
      * @return RecordSetInterface<T>
      */
-    public function take(int $count): RecordSetInterface;
+    public function take(int $count): QueryableInterface;
 
     /**
      * @param Closure<T> $expr
@@ -48,7 +48,7 @@ interface QueryableInterface extends EnumerationInterface
      * @param DataSetInterface $dataset
      * @return QueryableInterface<T>
      */
-    public function combine(DataSetInterface $dataset): QueryableInterface;
+   // public function combine(DataSetInterface $dataset): QueryableInterface;
 
     /**
      * @param Closure $expression Expression accepting T as parameter, the return value will be the new mapping
