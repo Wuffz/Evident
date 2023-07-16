@@ -17,7 +17,7 @@ trait Withable
      * @return self
      * 
      */
-    private function ObjectWithProperty(string $property, mixed z$value, $obj): self
+    private function ObjectWithProperty(string $property, mixed $value, $obj): self
     {
 
         $clone = clone $this;
