@@ -6,9 +6,11 @@ namespace Evident\Matter\Tests\Resources\Entities;
  * Example Album Entity
  */
 class Album {
-    // <AlbumID => ClassNameId or just Id as a convention >
     private int $id;
-    private string $title;
-    // ClassNameId will be resolved to Artist::class?
-    //private Artist $artist; 
+    public string $title;
+    protected string $artist_id;
+
+    public function getId() {
+        return $this->id;
+    }
 }

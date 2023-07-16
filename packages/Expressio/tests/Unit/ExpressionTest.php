@@ -16,6 +16,7 @@ final class ExpressionTest extends TestCase
         $expr = new Expression( fn($uu) => $uu->a > $uu->b );
         
         $stmt = $transpiler->transpile($expr);
+        
         $this->assertEquals('return $uu->a > $uu->b;', $stmt->source);
     }
 }

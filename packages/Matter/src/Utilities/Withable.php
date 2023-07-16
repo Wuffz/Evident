@@ -62,9 +62,11 @@ trait Withable
     {
         $target = $this;
         foreach ($properties as $property => $value) {
-            $target = $target->withProperty($property, $value);
+            $target = $this->ObjectWithProperty($property, $value, $this);
         }
         return $target;
     }
-
+    private function withProperty($var, $val) {
+        return $this->ObjectWithProperty($var, $val, $this);
+    }
 }

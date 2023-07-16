@@ -11,10 +11,13 @@ use Evident\Expressio\Transpiler\TranspilationInterface;
 use Evident\Matter\Behaviour\NamingInterface;
 use Evident\Matter\DataSource\RecordSetInterface;
 use Evident\Matter\DataSource\RemoteDataSetInterface;
+use Evident\Matter\Utilities\Dehydrator;
+use Evident\Matter\Utilities\Hydrator;
 use Evident\Matter\Utilities\Withable;
 use Exception;
 use PDO;
 use PDOStatement;
+use PhpParser\Node\Stmt\Declare_;
 
 /**
  * Represents a single table for query building, is immutable
@@ -37,20 +40,40 @@ class RemoteDataSet implements RemoteDataSetInterface
     private int $skip;
     private int $take;
 
+    private Hydrator $hydrator;
     
     public function __construct(
         PDO $connection,
         String $entity,
         ?NamingInterface $naming,
     ) {
+        $this->entityName = $entity;
         $this->pdo = $connection;
         $this->local_name = $entity;
+
         if ( $naming ) {
             $this->naming = $naming;
             $this->remote_name = $this->naming->getRemoteNameFromEntity($entity);
-            $this->aliasses = $this->naming->getRemoteNameForProperties($entity) 
-                            + [ $this->local_name => $this->remote_name ];
+            $this->aliasses = array_unique(array_merge(
+                $this->naming->getRemoteNameForProperties($entity),
+                [ $this->local_name => $this->remote_name ]
+            ));
         }
+        $this->hydrator = new Hydrator($this->local_name,$this->aliasses);
+    }
+
+    public function getHydratedOrStdClass(Object|array $records) {
+        if ( is_array($records) ) {
+            foreach ( $records as $key => $record ) {
+                $records[$key] = $this->hydrator->hydrate($records);
+            }
+            return $records;
+        }
+        if ( class_exists($this->local_name) ) {
+            $records = $this->hydrator->hydrate($records);
+        }
+        
+        return $records;
     }
     /**
      * string version of the remote dataset name ( e.g. table name )
@@ -67,7 +90,8 @@ class RemoteDataSet implements RemoteDataSetInterface
     public function filter(Closure $expr): self
     {
         $expression = new Expression($expr);
-        return $this->withProperty('filters', $this->filters ?? []  + [ $expression ] );
+        $filters = array_merge($this->filters ?? [],[ $expression ]);
+        return $this->withProperty('filters', $filters);
     }
     public function skip(int $count): self
     {
@@ -84,17 +108,16 @@ class RemoteDataSet implements RemoteDataSetInterface
         $bindings = [];
         
         $transpiler = new AnsiSqlTranspiler();
-        $aliasses += $this->aliasses;
+        $aliasses = array_merge($aliasses , $this->aliasses);
         $transpiler->setAliasses($aliasses);
-        //dd($transpiler);
         
         foreach ($this->filters as $expr) {
             $expr = $transpiler->transpile($expr);
             $statements[] = ' ( ' . $expr->statement . ' ) ';
-            $bindings = $bindings + $expr->bindings;
+            $bindings = array_merge( $bindings , $expr->bindings);
         }
         
-        $statement = implode(" && ", $statements);
+        $statement = implode(" AND ", $statements);
         $transpilation = new AnsiSqlTranspilation();
         $transpilation->statement = $statement;
         $transpilation->bindings = $bindings;
@@ -102,12 +125,14 @@ class RemoteDataSet implements RemoteDataSetInterface
 
     }
     private function buildQuery($context = [], $select = '*'): array {
+
+        //dd($this->aliasses);
         $query = 'select '.$select.' from ' . $this->getRemoteName();
         $bindings = [];
 
         if (count($this->filters ?? []) > 0) {
             $where = $this->getWhereTranspilation();
-            $bindings = $bindings + $where->bindings;
+            $bindings = array_unique(array_merge($bindings,$where->bindings));
             $query .= ' WHERE ' . $where->statement;
         }
 
@@ -123,6 +148,7 @@ class RemoteDataSet implements RemoteDataSetInterface
     private function getSelectPdoStatement($context = [], $select = '*'): PDOStatement
     {
         list($query, $bindings) = $this->buildQuery($context, $select);
+        
         $stmt = $this->pdo->prepare($query);
         if ( $stmt === false ) {
             throw new Exception('failed to prepare statement');
@@ -153,7 +179,10 @@ class RemoteDataSet implements RemoteDataSetInterface
         }
         // actual fetching using filters, take and skip
         $stmt->execute();
-        return $stmt->fetchObject();
+        
+        $obj = $stmt->fetchObject();
+        
+        return $this->getHydratedOrStdClass($obj);
     }
     public function last(?Closure $expr = null): mixed
     {

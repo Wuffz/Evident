@@ -5,7 +5,13 @@ namespace Evident\Matter\Behaviour;
 use Evident\Matter\Utilities\EntityReflector;
 use Evident\Matter\Utilities\Inflector;
 
-class CamelCaseFullTableNamesConvention implements NamingInterface {
+/**
+ * Naming Convention converter for the following:
+ * snake_case properties on the entities ( e.g. $artist_id )
+ * PascalCase properties on the Database ( e.g. Artists.ArtisId)
+ * Fully keyed, meaning the private key will be EntityId instead of id
+ */
+class SnakeCaseToPascalCaseFullyKeyedConvention implements NamingInterface {
     private $namespace;
     public function __construct(string $namespace) {
         $this->namespace = ltrim($namespace,'\\');
@@ -37,8 +43,8 @@ class CamelCaseFullTableNamesConvention implements NamingInterface {
             } else {
                 $name = (new Inflector($prop->getName()))->camelize()->toString();
             }
-            $remote[ $prop->getName() ] = $name;
+            $remotenames[ $prop->getName() ] = $name;
         }
-        return $remote;
+        return $remotenames;
     }
 }

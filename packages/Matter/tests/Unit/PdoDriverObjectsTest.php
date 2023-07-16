@@ -2,7 +2,7 @@
 declare(strict_types=1);
 namespace Evident\Matter\Tests\Unit;
 
-use Evident\Matter\Behaviour\CamelCaseFullTableNamesConvention;
+use Evident\Matter\Behaviour\SnakeCaseToPascalCaseFullyKeyedConvention;
 use Evident\Matter\DataSource\RemoteDataSetInterface;
 use PDO;
 use Evident\Matter\Driver\PDO\Driver as PdoDriver;
@@ -29,7 +29,7 @@ final class PdoDriverObjectsTest extends TestCase
         // pass aliasses for classes
         $pdo = new PDO("sqlite:" . __DIR__ . "/../Resources/chinook.db");
         $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        $naming = new CamelCaseFullTableNamesConvention('\\Evident\\Matter\\Tests\\Resources\\Entities');
+        $naming = new SnakeCaseToPascalCaseFullyKeyedConvention('\\Evident\\Matter\\Tests\\Resources\\Entities');
         $this->driver = new PdoDriver($pdo, $naming);
         $this->albums = $this->driver->from(Album::class);
         $this->artists = $this->driver->from('artists');
@@ -38,7 +38,7 @@ final class PdoDriverObjectsTest extends TestCase
     public function testGetFirst()
     {
         $f = $this->albums->first();
-        $this->assertEquals(1, $f->AlbumId);
+        $this->assertEquals(1, $f->getId());
     }
     public function TestPrepareStatementsDirectInputScalarVersusVeriable() 
     {
@@ -66,12 +66,28 @@ final class PdoDriverObjectsTest extends TestCase
          // when in the convention, it should translate a.title to albums.Title
          // also should remap the albums.AlbumId to $f->id
          $f = $this->albums->filter(fn(Album $a) => $a->title == 'Big Ones')->first();
-
+         
          // we do get an actual stdClass, but it's not hydrated into the entity
-         $this->assertEquals(5, $f->id);
+         $this->assertEquals(5, $f->getId());
          
     }
     public function testScalarsWithDoubleNames() {
+        $f = $this->albums;
+
+        $search = 'Big Ones';
+        $f = $f->filter(fn(Album $a) => $a->title == $search);
+
+        $search = 5;
+
+
+        // Current: This should translate to albums.AlbumId , not albums.id
+        $f = $f->filter(fn(Album $a) => $a->id == $search);
+
+        $f->debug();
+
+        $f = $f->first();
+        
+        $this->assertEquals(5, $f->getId());
         // make 2 where's with different input values, but same input name, check if collide
     }
     public function testLeftJoin()

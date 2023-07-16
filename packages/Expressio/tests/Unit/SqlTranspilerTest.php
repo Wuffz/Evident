@@ -20,11 +20,13 @@ class SqlTranspilerTest extends TestCase
         // pass aliasses for classes
 
     }
+    // we should test with remapping, most of these tests are now in Matter, which is okay, but should be here aswell.
 
     public function assertAsSql(\Closure $fn, string $expected, array $expected_bindings = [])
     {
         // setup transpiler
         $transpiler = new AnsiSqlTranspiler();
+        $transpiler->disableRemapping();
         $transpiler->setAliasses([User::class => 'users']);
 
 
@@ -42,8 +44,6 @@ class SqlTranspilerTest extends TestCase
 
 
     }
-
-
     public function testTranspilationToSqlWithBindings()
     {
         $max_age = 200;
@@ -55,7 +55,8 @@ class SqlTranspilerTest extends TestCase
                 ':this.min_age' => $this->min_age,
                 ':max_age' => $max_age,
             ]
-        ); }
+        ); 
+    }
     public function testTranspilationBasicOperators() {
         // comparisons
         $this->assertAsSql(fn($a, $b) => $a == $b, 'a = b');
