@@ -16,7 +16,7 @@ class UpdateQueryTest extends SqlTestCase {
                 'stars' => 5,
             ])
             ->join('books', fn($users, $books) => $users->id == $books->user_id)
-            ->where(fn($users) => $books->amount_sold > 100)
+            ->where(fn($books) => $books->amount_sold > 100)
             ->getQuery();
 
         $this->assertEquals(
