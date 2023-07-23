@@ -101,13 +101,14 @@ class RemoteDataSet implements RemoteDataSetInterface
     {
         return $this->withProperty('take', $count);
     }
-    private function getWhereTranspilation(array $aliasses = []): AnsiSqlTranspilation
+    private function getWhereTranspilation(array $aliasses): AnsiSqlTranspilation
     {
         // compile multiple into one transpilation
         $statements = [];
         $bindings = [];
         
         $transpiler = new AnsiSqlTranspiler();
+        
         $aliasses = array_merge($aliasses , $this->aliasses);
         $transpiler->setAliasses($aliasses);
         
@@ -131,7 +132,7 @@ class RemoteDataSet implements RemoteDataSetInterface
         $bindings = [];
 
         if (count($this->filters ?? []) > 0) {
-            $where = $this->getWhereTranspilation();
+            $where = $this->getWhereTranspilation($this->aliasses);
             $bindings = array_unique(array_merge($bindings,$where->bindings));
             $query .= ' WHERE ' . $where->statement;
         }
@@ -147,6 +148,7 @@ class RemoteDataSet implements RemoteDataSetInterface
     }
     private function getSelectPdoStatement($context = [], $select = '*'): PDOStatement
     {
+        
         list($query, $bindings) = $this->buildQuery($context, $select);
         
         $stmt = $this->pdo->prepare($query);
@@ -154,7 +156,7 @@ class RemoteDataSet implements RemoteDataSetInterface
             throw new Exception('failed to prepare statement');
         }
         foreach ($bindings as $binding => $value) {
-            $stmt->bindParam($binding, $value, is_int($value) ? PDO::PARAM_INT : PDO::PARAM_STR);
+            $stmt->bindValue($binding, $value, is_int($value) ? PDO::PARAM_INT : PDO::PARAM_STR);
         }
         
         return $stmt;
@@ -180,8 +182,11 @@ class RemoteDataSet implements RemoteDataSetInterface
         // actual fetching using filters, take and skip
         $stmt->execute();
         
+        
         $obj = $stmt->fetchObject();
         
+        
+
         return $this->getHydratedOrStdClass($obj);
     }
     public function last(?Closure $expr = null): mixed
@@ -249,7 +254,14 @@ class RemoteDataSet implements RemoteDataSetInterface
 
     public function debugInfo(): array 
     {
-        return $this->buildQuery();
+        $q = $this->buildQuery();
+        $query = $q[0];
+        foreach ( $q[1] as $key => $val ) {
+            $query = str_replace($key, '"'.$val.'"', $query);
+        }
+        $q[] = $query;
+        return $q;
+
     }
     public function debug(): void 
     {

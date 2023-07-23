@@ -6,11 +6,12 @@ namespace Evident\Matter\Tests\Resources\Entities;
  * Example Album Entity
  */
 class Album {
-    private int $id;
+    public int $id;
     public string $title;
-    protected string $artist_id;
+    public string $artist_id;
 
     public function getId() {
         return $this->id;
     }
+
 }

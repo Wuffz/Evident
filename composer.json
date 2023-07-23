@@ -44,10 +44,16 @@
             "vendor/bin/monorepo-builder merge"
         ],
         "test": [
-            "vendor/bin/phpunit"
+            "/usr/bin/php vendor/bin/phpunit"
         ],
         "debug": [
-            "/usr/bin/php -d xdebug.remote_port=8000 vendor/bin/phpunit"
+            "/usr/bin/php -d xdebug.remote_port=9000 -dxdebug.remote_host=127.0.0.1 -dxdebug.start_with_request=yes vendor/bin/phpunit"
+        ],
+        "coverage": [
+            "/usr/bin/php -dxdebug.mode=coverage vendor/bin/phpunit --coverage-text"  
+        ],
+        "coverage-report": [
+            "/usr/bin/php -dxdebug.mode=coverage vendor/bin/phpunit --coverage-html tmp/reports"  
         ],
         "check-all": [
             "@test"

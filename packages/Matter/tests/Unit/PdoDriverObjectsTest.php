@@ -77,45 +77,14 @@ final class PdoDriverObjectsTest extends TestCase
         $search = 'Big Ones';
         $f = $f->filter(fn(Album $a) => $a->title == $search);
 
-        $search = 5;
-
+        $search = 3;
 
         // Current: This should translate to albums.AlbumId , not albums.id
-        $f = $f->filter(fn(Album $a) => $a->id == $search);
-
-        $f->debug();
+        $f = $f->filter(fn(Album $a) => $a->artist_id == $search);
 
         $f = $f->first();
         
         $this->assertEquals(5, $f->getId());
         // make 2 where's with different input values, but same input name, check if collide
     }
-    public function testLeftJoin()
-    {
-        $f = $this->albums->leftJoin(fn(Album $a, Artist $ar) => $a->id == $ar->id )->all();
-        // we need a short syntax ?
-        $f = $this->albums->join(fn($a, Artist $b ) => $a < $b );
-
-    }
-    // public function testFilter(){
-
-    // }
-    // public function testSkip(){
-
-    // }
-    // public function testTake(){
-
-    // }
-    // public function testFirst(){
-
-    // }
-    // public function testLast(){
-
-    // }
-    // public function testAll(){
-
-    // }
-    // public function testCount(){
-
-    // } 
 }
