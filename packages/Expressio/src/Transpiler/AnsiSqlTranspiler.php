@@ -142,10 +142,6 @@ class AnsiSqlTranspiler implements TranspilerInterface
     
     private function transpileIdentifier(Node $node): string
     {
-        if ( array_key_exists($node->name,$this->aliasses) ) {
-            return $this->aliasses[$node->name];
-        }
-
         return $node->name;
     }
     
