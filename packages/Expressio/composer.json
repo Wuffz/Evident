@@ -17,7 +17,8 @@
         "evident/expressio": "self.version"
     },
     "required": {
-        "nikic/php-parser": "^4.15"
+        "nikic/php-parser": "^4.15",
+        "evident/bunch": "self.version"
     }
 }
 

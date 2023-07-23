@@ -3,6 +3,7 @@
 namespace Evident\Expressio;
 
 use Closure;
+use Exception;
 use PhpParser\Error;
 use PhpParser\Node;
 use PhpParser\Node\Expr;
@@ -39,24 +40,23 @@ class ExpressionReflector extends \ReflectionFunction
         $lines = array_slice($lines, $start - 1, $end - $start + 1);
         $source = implode('', $lines);
 
+        $errorhandler = new \PhpParser\ErrorHandler\Collecting();
         // parse the source code
         $parser = (new ParserFactory())->create(ParserFactory::PREFER_PHP7);
+        $source = trim($source);
+        // prevent starting with ->where()
+        $source = rtrim($source, ';'); // force removal of end ';'
+        $source = rtrim($source, ','); // in case of array syntax, force removal of ,
+        //preg_replace('/^->/', '', $source); // in case of ->where(fn()=>) lines, remove the -> 
+        $source = '<?php '.$source.';';
+        
         try {
-            $ast = $parser->parse('<?php '.$source);
-        } catch (Error $error) {
-            $preventfail = false;
-
-            // check if this was array notation
-            if ($error->getMessage() == 'Syntax error, unexpected \',\' on line 1') {
-                $ast = $parser->parse('<?php '.rtrim($source, ", \n").';');
-                $preventfail = true;
-            }
-
-            if (!$preventfail) {
-                throw new ExpressionReflectorException("Parse error: ".$error->getMessage());
-            }
+            $ast = $parser->parse($source, $errorhandler);
+            
+        } catch (Exception $e ) {
+            dd($e);
         }
-
+        
         // find the nodes which explicitly is a closure or arrow function
         $nodeFinder = new NodeFinder();
         $nodes = $nodeFinder->find($ast, function (Node $node) {

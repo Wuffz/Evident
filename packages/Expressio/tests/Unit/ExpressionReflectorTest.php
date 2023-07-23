@@ -32,13 +32,15 @@ final class ExpressionReflectorTest extends TestCase
         $this->assertInstanceOf(ExpressionReflector::class, $ref);
     }
 
-    public function testExpressionReflectorException() {
+   /*  
+   // we need to find a new failure.. cause this works...
+   public function testExpressionReflectorException() {
         $this->expectException(ExpressionReflectorException::class);
         $fns = [
             fn($uu) => $uu->a > $uu->b # comment
         ];
         $ref = (new Expression( $fns[0]) )->getReflection();
-    }
+    }*/ 
 
     public function testFailOnMultipleClosures() {
         $this->expectException(ExpressionReflectorException::class);

@@ -213,6 +213,19 @@ class AnsiSqlTranspiler implements TranspilerInterface
         return '"' . $n->value . '"';
     }
 
+    private function transpileExprArray(Node $n): string
+    {
+        $items = [];
+        // tuple format.
+        foreach ( $n->items as $item ) {
+            $items[] = $this->transpileNode($item);
+        }
+        return implode(", ",$items);
+    }
+    private function transpileExprArrayItem(Node $n ): string 
+    {
+        return $this->transpileNode($n->value);
+    }
     private function transpileExprConstFetch(Node $n): string
     {
         $test = strtolower($n->name->parts[0]);
