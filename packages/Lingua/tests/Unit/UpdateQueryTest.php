@@ -20,7 +20,7 @@ class UpdateQueryTest extends SqlTestCase {
             ->getQuery();
 
         $this->assertEquals(
-            'UPDATE users SET stars = :stars  JOIN books ON users.id = books.user_id WHERE books.amount_sold > 100',
+            'UPDATE users SET stars = :stars JOIN books ON users.id = books.user_id WHERE books.amount_sold > 100',
             $query->getQuery()
         );
     }    

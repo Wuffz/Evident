@@ -5,6 +5,8 @@ namespace Evident\Expressio\Tests\Unit;
 use Evident\Expressio\Expression;
 use Evident\Expressio\Transpiler\AnsiSqlTranspiler;
 use Evident\Expressio\Tests\Resources\User;
+use Evident\Expressio\Transpiler\AnsiSqlTranspilation;
+use Evident\Expressio\Transpiler\TranspilationInterface;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 
@@ -109,6 +111,17 @@ class SqlTranspilerTest extends TestCase
         ); 
         $this->expectException(RuntimeException::class);
         $this->assertAsSql(fn(User $u) => $u->id == PHP_VERSION , '' ); 
+    }
+
+    public function testAnsiSqlTranspilation() {
+        $transpiler = new AnsiSqlTranspiler();
+        $transpiler->disableAntiColide();
+        $transpiler->setAliasses([User::class => 'users', 'users.id' => 'users.UserId']);
+        $expr = new Expression(fn(User $u) => $u->id == $var);
+        $transpilation = $transpiler->transpile($expr);
+        $this->assertInstanceOf(AnsiSqlTranspilation::class, $transpilation);
+        $this->assertIsString($transpilation->statement);
+        $this->assertIsArray($transpilation->bindings);
     }
 
 }

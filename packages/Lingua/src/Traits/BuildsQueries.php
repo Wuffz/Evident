@@ -4,11 +4,12 @@ namespace Evident\Lingua\Traits;
 
 trait BuildsQueries {
     private function buildQuery($query): string {
+        
         $iam = fn($in) => in_array($in, class_uses($this));
 
         if ( $iam(Joinable::class) ) {
             if (!empty($this->joinClauses)) {
-                $query .= ' ' . implode(' ', $this->joinClauses);
+                $query .= ' ' .trim( implode(' ', $this->joinClauses),' ');
             }
         }
 

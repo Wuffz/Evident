@@ -10,7 +10,7 @@ trait Bindingable {
         $this->bindings[$var] = $val;
     }
 
-    private function addBindings(... $kv) : void {
+    private function addBindings($kv) : void {
         foreach ( $kv as $k => $v ) {
             $this->addBinding($k, $v);
         }
