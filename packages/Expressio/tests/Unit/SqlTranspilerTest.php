@@ -26,7 +26,7 @@ class SqlTranspilerTest extends TestCase
     {
         // setup transpiler
         $transpiler = new AnsiSqlTranspiler();
-        $transpiler->disableRemapping();
+        $transpiler->disableAntiColide();
         $transpiler->setAliasses([User::class => 'users']);
 
 

@@ -18,7 +18,7 @@ class AnsiSqlTranspiler implements TranspilerInterface
     private ?Expression $expr;
 
     public function disableAntiColide() {
-        $this->anticolide = false;
+        $this->antiColide = false;
     }
     /**
      * Setting aliasses array
@@ -41,18 +41,18 @@ class AnsiSqlTranspiler implements TranspilerInterface
      *
      */
     public function transpile(Expression $expr, $remap = true): AnsiSqlTranspilation
-    {
+    { 
         $this->expr = $expr;
         $transpilation = new AnsiSqlTranspilation();
         $transpilation->statement = $this->transpileNode($this->expr->getReflection()->getAst());
         $transpilation->bindings = $this->bindings;
-        $this->antiColideBindings($transpilation);
+        $transpilation = $this->antiColideBindings($transpilation);
         
         return $transpilation;
     }
 
-    public function antiColideBindings(&$transpilation) {
-        if ( !$this->antiColide ) return;
+    public function antiColideBindings($transpilation): AnsiSqlTranspilation {
+        if ( !$this->antiColide ) return $transpilation;
 
         foreach ( $transpilation->bindings as $old => $value ) {
             $new = ':'.base_convert(microtime(), 10, 36);
@@ -60,6 +60,7 @@ class AnsiSqlTranspiler implements TranspilerInterface
             unset($transpilation->bindings[$old]);
             $transpilation->statement = str_replace("$old", "$new", $transpilation->statement);
         }
+        return $transpilation;
     }
 
     /**
@@ -122,6 +123,7 @@ class AnsiSqlTranspiler implements TranspilerInterface
         $params = $this->expr->getReflection()->getParameters();
         foreach ($params as $param) {
             foreach ($this->aliasses as $alias_type => $alias) {
+                // echo $alias_type .' => '. $alias . PHP_EOL;
                 if ((string) $param->getName() === (string) $n->name && $param->hasType() && (string) $param->getType() === (string) $alias_type) {
                     return $alias;
                 }
@@ -139,6 +141,10 @@ class AnsiSqlTranspiler implements TranspilerInterface
 
     private function transpileIdentifier(Node $node): string
     {
+        if ( array_key_exists($node->name,$this->aliasses) ) {
+            return $this->aliasses[$node->name];
+        }
+
         return $node->name;
     }
     private function transpileExprPropertyFetch(Node $n): string
