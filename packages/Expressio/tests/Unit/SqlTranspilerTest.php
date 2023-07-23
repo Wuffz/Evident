@@ -114,6 +114,7 @@ class SqlTranspilerTest extends TestCase
     }
 
     public function testAnsiSqlTranspilation() {
+        $var = 1;
         $transpiler = new AnsiSqlTranspiler();
         $transpiler->disableAntiColide();
         $transpiler->setAliasses([User::class => 'users', 'users.id' => 'users.UserId']);
