@@ -6,7 +6,11 @@ use Evident\Expressio\Expression;
 use Evident\Expressio\Transpiler\AnsiSqlTranspiler;
 use Evident\Expressio\Tests\Resources\User;
 use PHPUnit\Framework\TestCase;
+use RuntimeException;
 
+function unsuportedFunction($a, $b) : int {
+    return strlen($a) > strlen($b);
+}
 class SqlTranspilerTest extends TestCase
 {
 
@@ -18,7 +22,7 @@ class SqlTranspilerTest extends TestCase
     public function setUp(): void
     {
         // pass aliasses for classes
-
+        $this->assertEquals(true, unsuportedFunction('aa','a'));
     }
     // we should test with remapping, most of these tests are now in Matter, which is okay, but should be here aswell.
 
@@ -34,8 +38,6 @@ class SqlTranspilerTest extends TestCase
         $transpilation = $transpiler->transpile($expr);
         $statement = $transpilation->statement;
         $bindings = $transpilation->bindings;
-
-        //var_dump($bindings);
 
         $this->assertEquals($expected, $statement);
         foreach ($expected_bindings as $k => $v) {
@@ -70,6 +72,21 @@ class SqlTranspilerTest extends TestCase
 
         // concat
         // $this->assertAsSql( fn( $a , $b  ) => $a . $b, 'a || b' ); // in sql we want to work with objects mapping, not new objects.. perhaps in the furure there's a need for this.
+    }
+
+    public function testTranspilationNotSupported() {
+        $this->expectException(RuntimeException::class);
+        $this->assertAsSql(fn($a, $b) => unsuportedFunction($a, $b),'');
+    }
+
+    public function testTranspileNodeConstantFetch()
+    {
+        $this->assertAsSql(
+            fn(User $u) => $u->admin == true || $u->admin == false ,
+            '( users.admin = 1 OR users.admin = 0 )'
+        ); 
+        $this->expectException(RuntimeException::class);
+        $this->assertAsSql(fn(User $u) => $u->id == PHP_VERSION , '' ); 
     }
 
 }

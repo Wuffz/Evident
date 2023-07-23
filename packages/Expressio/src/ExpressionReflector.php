@@ -48,12 +48,8 @@ class ExpressionReflector extends \ReflectionFunction
 
             // check if this was array notation
             if ($error->getMessage() == 'Syntax error, unexpected \',\' on line 1') {
-                try {
-                    $ast = $parser->parse('<?php '.rtrim($source, ", \n").';');
-                    $preventfail = true;
-                } catch (Error $e) {
-                    // don't override the error.
-                }
+                $ast = $parser->parse('<?php '.rtrim($source, ", \n").';');
+                $preventfail = true;
             }
 
             if (!$preventfail) {
@@ -73,12 +69,7 @@ class ExpressionReflector extends \ReflectionFunction
             throw new ExpressionReflectorException("Multiple closures on a single line of source code is not supported");
         }
 
-        // store the AST
-        //var_dump($nodes[0]));
         $ast = $nodes[0];
-        if (!$ast) {
-            throw new ExpressionReflectorException("Cannot determine location for closure");
-        }
         unset($nodes);
 
         // store the full source code and body source code

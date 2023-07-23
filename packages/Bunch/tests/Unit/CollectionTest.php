@@ -6,16 +6,26 @@ namespace Evident\Bunch\Tests\Unit;
 use Evident\Bunch\Collection;
 use PHPUnit\Framework\TestCase;
 
-final class CollectionTest extends TestCase
+ class CollectionTest extends EnumerationTest
 {
     private function getCollection()
     {
         return new Collection([1, 2, 3, 4]);
     }
+    
     public function testAdd()
     {
         $collection = $this->getCollection();
         $collection->add(null);
+        $count = $collection->count();
+
+        $this->assertTrue($count == 5);
+    }
+
+    public function testAddWithKey()
+    {
+        $collection = $this->getCollection();
+        $collection->add(null, 'null');
         $count = $collection->count();
 
         $this->assertTrue($count == 5);
@@ -40,4 +50,11 @@ final class CollectionTest extends TestCase
         $this->assertTrue($removed == 3);
         $this->assertTrue($collection->skip(1)->first() == 3);
     }
+
+    public function testToArray() {
+        $array = $this->getCollection()->toArray();
+
+        $this->assertEquals([1,2,3,4], $array);
+    }
+    
 }

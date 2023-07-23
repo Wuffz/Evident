@@ -52,6 +52,9 @@
         "coverage": [
             "/usr/bin/php -dxdebug.mode=coverage vendor/bin/phpunit --coverage-text"  
         ],
+        "coverage-report": [
+            "/usr/bin/php -dxdebug.mode=coverage vendor/bin/phpunit --coverage-html tmp/reports"  
+        ],
         "check-all": [
             "@test"
         ],
