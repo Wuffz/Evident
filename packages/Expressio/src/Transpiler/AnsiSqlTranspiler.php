@@ -151,14 +151,13 @@ class AnsiSqlTranspiler implements TranspilerInterface
     {
         // check if it is a passed object?
         $result = $this->transpileNode($n->var) . '.' . $this->transpileNode($n->name);
-
-
+        if ( array_key_exists($result,$this->aliasses) ) {
+            $result = $this->aliasses[$result];
+        }
         // is this a passed object? then use its value as a binding
-
         // need bindings?
         if ($n->var->name == 'this') {
             $scope = $this->expr->getReflection()->getClosureThis();
-
             if ($scope) {
                 $ref = new \ReflectionProperty($scope, $n->name);
                 if ($ref) {
