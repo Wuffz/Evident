@@ -4,18 +4,18 @@ namespace Evident\Lingua\Traits;
 
 use Closure;
 
-trait Orderable {
+trait Groupable {
 
     use TranspilesClosures;
 
-    protected $groupByColumns = [];
+    protected $orderByColumns = [];
 
-    public function groupBy(Closure $closure): self
+    
+    public function orderBy(Closure $closure): self
     {
         $transpilation = $this->transpileClosure($closure);
         $columns = explode(", ", $transpilation->statement);
-        $this->groupByColumns = array_merge($this->groupByColumns, $columns);
+        $this->orderByColumns = array_merge($this->orderByColumns, $columns);
         return $this;
     }
-
 }

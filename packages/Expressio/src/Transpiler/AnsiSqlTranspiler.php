@@ -138,7 +138,8 @@ class AnsiSqlTranspiler implements TranspilerInterface
         }
         return $n->name;
     }
-
+    
+    
     private function transpileIdentifier(Node $node): string
     {
         if ( array_key_exists($node->name,$this->aliasses) ) {
@@ -147,6 +148,8 @@ class AnsiSqlTranspiler implements TranspilerInterface
 
         return $node->name;
     }
+    
+     
     private function transpileExprPropertyFetch(Node $n): string
     {
         // check if it is a passed object?
@@ -236,5 +239,10 @@ class AnsiSqlTranspiler implements TranspilerInterface
             return 0;
         }
         throw new \RuntimeException("transpileExprConstFetch cannot determine value in " . self::class);
+    }
+
+    private function transpileScalarLNumber(Node $n): string
+    {
+        return $n->value;
     }
 }

@@ -50,13 +50,9 @@ class ExpressionReflector extends \ReflectionFunction
         //preg_replace('/^->/', '', $source); // in case of ->where(fn()=>) lines, remove the -> 
         $source = '<?php '.$source.';';
         
-        try {
-            $ast = $parser->parse($source, $errorhandler);
-            
-        } catch (Exception $e ) {
-            dd($e);
-        }
-        
+        /* @var Node[] $ast */
+        $ast = $parser->parse($source, $errorhandler);
+
         // find the nodes which explicitly is a closure or arrow function
         $nodeFinder = new NodeFinder();
         $nodes = $nodeFinder->find($ast, function (Node $node) {
@@ -68,14 +64,15 @@ class ExpressionReflector extends \ReflectionFunction
         if (count($nodes) > 1) {
             throw new ExpressionReflectorException("Multiple closures on a single line of source code is not supported");
         }
-
-        $ast = $nodes[0];
+        /** @var Expr\Closure|Expr\ClosureUse|Expr\ArrowFunction $node */
+        $node = $nodes[0];
         unset($nodes);
+        unset($ast);
 
         // store the full source code and body source code
         $prettyPrinter = new PrettyPrinter\Standard();
-        $this->body_source =  $prettyPrinter->prettyPrint($ast->getStmts());
-        $this->ast = $ast->getStmts();
+        $this->body_source =  $prettyPrinter->prettyPrint($node->getStmts());
+        $this->ast = $node->getStmts();
     }
 
     public function getAst(): array

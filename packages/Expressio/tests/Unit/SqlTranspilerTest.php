@@ -81,6 +81,8 @@ class SqlTranspilerTest extends TestCase
     }
     public function testTranspilationBasicOperators() {
         // comparisons
+        $this->assertAsSql(fn($a, $b) => $a == 1, 'a = 1');
+        $this->assertAsSql(fn($a, $b) => 1 == $b, '1 = b');
         $this->assertAsSql(fn($a, $b) => $a == $b, 'a = b');
         $this->assertAsSql(fn($a, $b) => $a > $b, 'a > b');
         $this->assertAsSql(fn($a, $b) => $a < $b, 'a < b');

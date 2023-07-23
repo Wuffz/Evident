@@ -11,9 +11,8 @@ The idea is to start with a data framework using closures as expressions , inspi
 
 - Expressio, smart library for converting Closure / Arrow functions into transpilable expressions, like but not limited to AnsiSQL
 - Bunch, verry minimal collection and enumerator implementation based on IteratorAggregation. should use closures for ease.
-- Matter, Data Abstract Layer, support both Readable, Writable and Bidirectional datastreams. could be your sql , mongo or even logger connection
-- Lingua - Verry simple SQL like pure php syntax query builder, uses Matter in the backend for creating connections and actually handling and Expressio for transpiling. Responses are always bunch compatible
-
+- Lingua - Verry simple SQL like pure php syntax query builder, uses Expressio for transpiling. Responses are pure arrays.
+- Matter, Data Abstract Layer, support both Readable, Writable and Bidirectional datastreams. could be your sql , mongo or even logger connection, uses Lingua for SQL for now.
 - Quantum - Full Entity Framework, based on all of the above.
 
 
@@ -29,25 +28,24 @@ v Bunch
     The Enumerator is intentionally immutable, 
     the Collection is intentonaly mutable.
 
-x Matter
-    Data provider library based on bunch, 
-    implementing closure/expressio and bunch r/o data. 
-    muttable OR immutable, depending on datasource, basically an Data Abstraction Layer
-        - As for now, focus on Map/Reduce/Skip/Take and Aggregation functionality
-        - should translate somthing like select(User::class, Lectures::class)->map(fn1)->where(fn2)->skip(int1)->take(int2);
-        // for sql that should transpile to some select user.* as user1 as fn1(user) where fn2(user) limit int2 offset int1
-        - introduce relations/eagerloading later on, using reflection we can create optimized queries i think, named entities?
-    
+
 x Lingua
-    Querying Language Library for multiple datasources  
-    Querying library based on Matter data sources
-    will pass anything just closures
-    The idea is to have a single API for all data
-    Will have 2 interfaces, Readable, Writable, implementing CollectionInterface and EnumeratorInterface
-        - For perfomance, should always allow Matter API to be used, so stdClasses kan be used.
+    Querying Language Library for Sql like languages 
+    Uses Expressio to compile closures into SQL statements
+    
+    May be renamed to LinguaSQL if it its obvious that there's another language to translate in to ( Mongo? OpenAPI? GraphQL? S3? Redis?)
+
+x Matter
+    Data Abstraction Layer,
+    Abstracts away different backends ( using Lingua package )
+    Does entity mapping and provides a convienient ORM
+    
 
 x Quantum 
-    Entity framework based on Lingua. 
-    Can be used with middleware datasources, therefore archiving, data-migrating and sharding can be done over multiple types of backends provided they are both writable
-    - The hydration functions should be publicly accessibly to dehydrate optemized classes
+    Extends on Matter. Code First Entity Framework
+    Provides:
+        importing current schema's
+        creating migrations with different migration tools ( or home made, we have not decided yet. )
+        differenciating between current schema, and current code
+
 
