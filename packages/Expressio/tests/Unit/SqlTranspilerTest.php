@@ -46,6 +46,26 @@ class SqlTranspilerTest extends TestCase
 
 
     }
+    public function testAntiColide() {
+        $transpiler = new AnsiSqlTranspiler();
+        $var = true;
+        $expr = new Expression(fn($a) => $a == $var);
+        $transpilation = $transpiler->transpile($expr);
+        $statement = $transpilation->statement;
+        $bindings = $transpilation->bindings;
+        $binding = key($bindings);
+        $this->assertEquals('a = ' . $binding, $statement);
+    }
+    public function testTranspileAliasses() {
+        $var = 1;
+        $transpiler = new AnsiSqlTranspiler();
+        $transpiler->disableAntiColide();
+        $transpiler->setAliasses([User::class => 'users', 'users.id' => 'users.UserId']);
+        $expr = new Expression(fn(User $u) => $u->id == $var);
+        $transpilation = $transpiler->transpile($expr);
+        $statement = $transpilation->statement;
+        $this->assertEquals('users.UserId = :var', $statement);
+    }
     public function testTranspilationToSqlWithBindings()
     {
         $max_age = 200;
