@@ -124,5 +124,5 @@ class SqlTranspilerTest extends TestCase
         $this->assertIsString($transpilation->statement);
         $this->assertIsArray($transpilation->bindings);
     }
-
 }
+

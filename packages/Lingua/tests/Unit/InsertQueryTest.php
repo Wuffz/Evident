@@ -22,6 +22,7 @@ class InsertQueryTest extends SqlTestCase {
             'INSERT INTO users (username, password) VALUES (?, ?)',
             $query->getQuery()
         );
+        
     }    
     
 }

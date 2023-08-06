@@ -32,7 +32,7 @@ class QueryBuilder {
         return $queryBuilder->setTable($this->tableName);
     }
     
-    public function select(Closure $fields) : SelectQueryBuilder {
+    public function select(?Closure $fields = null) : SelectQueryBuilder {
         $queryBuilder = (new SelectQueryBuilder($this->connection, $this->transpiler));
         $queryBuilder = $this->withTable($queryBuilder);
         return $queryBuilder->select($fields);

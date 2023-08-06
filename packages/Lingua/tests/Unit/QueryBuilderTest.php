@@ -12,6 +12,7 @@ use PHPUnit\Framework\TestCase;
 use PDO;
 
 class TestQueryBuilder extends SqlTestCase{
+    
     public function testInsertQuery() {
         $builder = (new QueryBuilder($this->pdo, $this->transpiler))->into('users')->insert([]);
         $this->assertInstanceOf(InsertQueryBuilder::class, $builder);

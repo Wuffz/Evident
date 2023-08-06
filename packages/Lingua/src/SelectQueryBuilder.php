@@ -5,7 +5,9 @@ namespace Evident\Lingua;
 use \Closure;
 use Evident\Expressio\Expression;
 use Evident\Expressio\Transpiler\TranspilerInterface;
+use Evident\Lingua\Traits\Aggregatable;
 use Evident\Lingua\Traits\BuildsQueries;
+use Evident\Lingua\Traits\Fetchable;
 use Evident\Lingua\Traits\Groupable;
 use Evident\Lingua\Traits\Joinable;
 use Evident\Lingua\Traits\Limitable;
@@ -24,6 +26,8 @@ class SelectQueryBuilder {
     use Groupable;
     use Orderable;
     use Tableable;
+    use Aggregatable;
+    use Fetchable;
 
     use TranspilesClosures;
     use BuildsQueries;
@@ -38,10 +42,13 @@ class SelectQueryBuilder {
         $this->transpiler = $transpiler;
     }    
     
-    public function select(Closure $select): self
-    {
-        $transpilation = $this->transpileClosure($select);
-        $columns = explode(", ", $transpilation->statement);
+    public function select(?Closure $select = null): self
+    {   if ( $select !== null ) {
+            $transpilation = $this->transpileClosure($select);
+            $columns = explode(", ", $transpilation->statement);
+        } else {
+            $columns = ['*'];
+        }
         $this->selectColumns = array_merge($this->selectColumns, $columns);
         return $this;
     }
@@ -56,5 +63,5 @@ class SelectQueryBuilder {
             $this->getBindings()
         );
     }
-    
+
 }

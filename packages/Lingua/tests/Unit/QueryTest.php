@@ -19,6 +19,5 @@ class QueryTest extends SqlTestCase{
         $sql = $query->getQuery();
         $this->assertTrue($bindings[':all'] == $all);
         $this->assertEquals($sql, 'SELECT :all FROM users');
-        
     }
 }

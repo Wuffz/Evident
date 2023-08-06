@@ -7,12 +7,14 @@ use Evident\Expressio\Expression;
 use Evident\Expressio\Transpiler\TranspilerInterface;
 use Evident\Lingua\Traits\Bindingable;
 use Evident\Lingua\Traits\BuildsQueries;
+use Evident\Lingua\Traits\Fetchable;
 use Evident\Lingua\Traits\Fromable;
 use Evident\Lingua\Traits\Groupable;
 use Evident\Lingua\Traits\Joinable;
 use Evident\Lingua\Traits\Limitable;
 use Evident\Lingua\Traits\Offsetable;
 use Evident\Lingua\Traits\Orderable;
+use Evident\Lingua\Traits\Queryable;
 use Evident\Lingua\Traits\Tableable;
 use Evident\Lingua\Traits\TranspilesClosures;
 use Evident\Lingua\Traits\Whereable;
@@ -21,8 +23,8 @@ class InsertQueryBuilder {
 
     use Tableable;
     use Bindingable;
-
     use BuildsQueries;
+    use Queryable;
 
     private \PDO $connection;
     private TranspilerInterface $transpiler;
