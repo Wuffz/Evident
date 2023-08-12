@@ -18,28 +18,24 @@ The idea is to start with a data framework using closures as expressions , inspi
 
 # Roadmap in this order:
 
-v Expressio
-    Expression library for converting PHP Closures 
-    in runtime to anything other than php 
-    e.g. sql, mongo. as for now this is a proof of concept. ( sql will do fine with sqllite )
-
 v Bunch 
     Verry minimal Collection and Enumerator classes. 
     The Enumerator is intentionally immutable, 
     the Collection is intentonaly mutable.
 
+v Expressio
+    Expression library for converting PHP Closures in runtime to anything other than php.
+    e.g. sql, mongo. as for now this is a proof of concept.
 
-x Lingua
+v Lingua
     Querying Language Library for Sql like languages 
     Uses Expressio to compile closures into SQL statements
-    
-    May be renamed to LinguaSQL if it its obvious that there's another language to translate in to ( Mongo? OpenAPI? GraphQL? S3? Redis?)
+    May be renamed to LinguaSQL if it its obvious that there's another language to translate in to ( Mongo? OpenAPI? GraphQL? S3? Redis? Memcached?, xlsx?, csv?, socket streams ?)
 
 x Matter
     Data Abstraction Layer,
-    Abstracts away different backends ( using Lingua package )
-    Does entity mapping and provides a convienient ORM
-    
+    Abstracts away different backends ( using Lingua package optinally others )
+    Does entity mapping and provides a convienient ORM using Bunch Collections
 
 x Quantum 
     Extends on Matter. Code First Entity Framework
