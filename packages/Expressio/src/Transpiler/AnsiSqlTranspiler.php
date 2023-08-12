@@ -138,27 +138,25 @@ class AnsiSqlTranspiler implements TranspilerInterface
         }
         return $n->name;
     }
-
+    
+    
     private function transpileIdentifier(Node $node): string
     {
-        if ( array_key_exists($node->name,$this->aliasses) ) {
-            return $this->aliasses[$node->name];
-        }
-
         return $node->name;
     }
+    
+     
     private function transpileExprPropertyFetch(Node $n): string
     {
         // check if it is a passed object?
         $result = $this->transpileNode($n->var) . '.' . $this->transpileNode($n->name);
-
-
+        if ( array_key_exists($result,$this->aliasses) ) {
+            $result = $this->aliasses[$result];
+        }
         // is this a passed object? then use its value as a binding
-
         // need bindings?
         if ($n->var->name == 'this') {
             $scope = $this->expr->getReflection()->getClosureThis();
-
             if ($scope) {
                 $ref = new \ReflectionProperty($scope, $n->name);
                 if ($ref) {
@@ -214,6 +212,19 @@ class AnsiSqlTranspiler implements TranspilerInterface
         return '"' . $n->value . '"';
     }
 
+    private function transpileExprArray(Node $n): string
+    {
+        $items = [];
+        // tuple format.
+        foreach ( $n->items as $item ) {
+            $items[] = $this->transpileNode($item);
+        }
+        return implode(", ",$items);
+    }
+    private function transpileExprArrayItem(Node $n ): string 
+    {
+        return $this->transpileNode($n->value);
+    }
     private function transpileExprConstFetch(Node $n): string
     {
         $test = strtolower($n->name->parts[0]);
@@ -224,5 +235,10 @@ class AnsiSqlTranspiler implements TranspilerInterface
             return 0;
         }
         throw new \RuntimeException("transpileExprConstFetch cannot determine value in " . self::class);
+    }
+
+    private function transpileScalarLNumber(Node $n): string
+    {
+        return $n->value;
     }
 }

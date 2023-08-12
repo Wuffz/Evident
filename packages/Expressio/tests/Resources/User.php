@@ -7,6 +7,7 @@ namespace Evident\Expressio\Tests\Resources;
  */
 class User
 {
+    public int $id;
     public int $age;
     public bool $admin;
 }

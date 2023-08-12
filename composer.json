@@ -16,20 +16,14 @@
             "Evident\\": "src/",
             "Evident\\Bunch\\": "packages/Bunch/src",
             "Evident\\Expressio\\": "packages/Expressio/src",
-            "Evident\\Matter\\": [
-                "packages/Matter/src",
-                "packages/Matter/src/src"
-            ]
+            "Evident\\Lingua\\": "packages/Lingua/src"
         }
     },
     "autoload-dev": {
         "psr-4": {
             "Evident\\Bunch\\Tests\\": "packages/Bunch/tests",
             "Evident\\Expressio\\Tests\\": "packages/Expressio/tests",
-            "Evident\\Matter\\Tests\\": [
-                "packages/Matter/src/tests",
-                "packages/Matter/tests"
-            ]
+            "Evident\\Lingua\\Tests\\": "packages/Lingua/tests"
         }
     },
     "scripts": {
@@ -50,10 +44,10 @@
             "/usr/bin/php -d xdebug.remote_port=9000 -dxdebug.remote_host=127.0.0.1 -dxdebug.start_with_request=yes vendor/bin/phpunit"
         ],
         "coverage": [
-            "/usr/bin/php -dxdebug.mode=coverage vendor/bin/phpunit --coverage-text"  
+            "/usr/bin/php -dxdebug.mode=coverage vendor/bin/phpunit --coverage-text"
         ],
         "coverage-report": [
-            "/usr/bin/php -dxdebug.mode=coverage vendor/bin/phpunit --coverage-html tmp/reports"  
+            "/usr/bin/php -dxdebug.mode=coverage vendor/bin/phpunit --coverage-html tmp/reports"
         ],
         "check-all": [
             "@test"
@@ -66,6 +60,7 @@
     "replace": {
         "evident/bunch": "self.version",
         "evident/expressio": "self.version",
+        "evident/lingua": "self.version",
         "evident/matter": "self.version"
     },
     "require-dev": {

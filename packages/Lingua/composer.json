@@ -1,0 +1,20 @@
+{
+    "name": "evident/lingua",
+    "require": {
+        "php": "^8.1",
+        "evident/bunch": "self.version"
+    },
+    "autoload": {
+        "psr-4": {
+            "Evident\\Lingua\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Evident\\Lingua\\Tests\\": "tests"
+        }
+    },
+    "replace": {
+        "evident/lingua": "self.version"
+    }
+}
