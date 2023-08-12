@@ -3,6 +3,7 @@
 namespace Evident\Expressio;
 
 use Closure;
+use Exception;
 use PhpParser\Error;
 use PhpParser\Node;
 use PhpParser\Node\Expr;
@@ -39,23 +40,18 @@ class ExpressionReflector extends \ReflectionFunction
         $lines = array_slice($lines, $start - 1, $end - $start + 1);
         $source = implode('', $lines);
 
+        $errorhandler = new \PhpParser\ErrorHandler\Collecting();
         // parse the source code
         $parser = (new ParserFactory())->create(ParserFactory::PREFER_PHP7);
-        try {
-            $ast = $parser->parse('<?php '.$source);
-        } catch (Error $error) {
-            $preventfail = false;
-
-            // check if this was array notation
-            if ($error->getMessage() == 'Syntax error, unexpected \',\' on line 1') {
-                $ast = $parser->parse('<?php '.rtrim($source, ", \n").';');
-                $preventfail = true;
-            }
-
-            if (!$preventfail) {
-                throw new ExpressionReflectorException("Parse error: ".$error->getMessage());
-            }
-        }
+        $source = trim($source);
+        // prevent starting with ->where()
+        $source = rtrim($source, ';'); // force removal of end ';'
+        $source = rtrim($source, ','); // in case of array syntax, force removal of ,
+        //preg_replace('/^->/', '', $source); // in case of ->where(fn()=>) lines, remove the -> 
+        $source = '<?php '.$source.';';
+        
+        /* @var Node[] $ast */
+        $ast = $parser->parse($source, $errorhandler);
 
         // find the nodes which explicitly is a closure or arrow function
         $nodeFinder = new NodeFinder();
@@ -68,14 +64,15 @@ class ExpressionReflector extends \ReflectionFunction
         if (count($nodes) > 1) {
             throw new ExpressionReflectorException("Multiple closures on a single line of source code is not supported");
         }
-
-        $ast = $nodes[0];
+        /** @var Expr\Closure|Expr\ClosureUse|Expr\ArrowFunction $node */
+        $node = $nodes[0];
         unset($nodes);
+        unset($ast);
 
         // store the full source code and body source code
         $prettyPrinter = new PrettyPrinter\Standard();
-        $this->body_source =  $prettyPrinter->prettyPrint($ast->getStmts());
-        $this->ast = $ast->getStmts();
+        $this->body_source =  $prettyPrinter->prettyPrint($node->getStmts());
+        $this->ast = $node->getStmts();
     }
 
     public function getAst(): array

@@ -5,6 +5,8 @@ namespace Evident\Expressio\Tests\Unit;
 use Evident\Expressio\Expression;
 use Evident\Expressio\Transpiler\AnsiSqlTranspiler;
 use Evident\Expressio\Tests\Resources\User;
+use Evident\Expressio\Transpiler\AnsiSqlTranspilation;
+use Evident\Expressio\Transpiler\TranspilationInterface;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 
@@ -46,6 +48,26 @@ class SqlTranspilerTest extends TestCase
 
 
     }
+    public function testAntiColide() {
+        $transpiler = new AnsiSqlTranspiler();
+        $var = true;
+        $expr = new Expression(fn($a) => $a == $var);
+        $transpilation = $transpiler->transpile($expr);
+        $statement = $transpilation->statement;
+        $bindings = $transpilation->bindings;
+        $binding = key($bindings);
+        $this->assertEquals('a = ' . $binding, $statement);
+    }
+    public function testTranspileAliasses() {
+        $var = 1;
+        $transpiler = new AnsiSqlTranspiler();
+        $transpiler->disableAntiColide();
+        $transpiler->setAliasses([User::class => 'users', 'users.id' => 'users.UserId']);
+        $expr = new Expression(fn(User $u) => $u->id == $var);
+        $transpilation = $transpiler->transpile($expr);
+        $statement = $transpilation->statement;
+        $this->assertEquals('users.UserId = :var', $statement);
+    }
     public function testTranspilationToSqlWithBindings()
     {
         $max_age = 200;
@@ -61,6 +83,8 @@ class SqlTranspilerTest extends TestCase
     }
     public function testTranspilationBasicOperators() {
         // comparisons
+        $this->assertAsSql(fn($a, $b) => $a == 1, 'a = 1');
+        $this->assertAsSql(fn($a, $b) => 1 == $b, '1 = b');
         $this->assertAsSql(fn($a, $b) => $a == $b, 'a = b');
         $this->assertAsSql(fn($a, $b) => $a > $b, 'a > b');
         $this->assertAsSql(fn($a, $b) => $a < $b, 'a < b');
@@ -89,4 +113,16 @@ class SqlTranspilerTest extends TestCase
         $this->assertAsSql(fn(User $u) => $u->id == PHP_VERSION , '' ); 
     }
 
+    public function testAnsiSqlTranspilation() {
+        $var = 1;
+        $transpiler = new AnsiSqlTranspiler();
+        $transpiler->disableAntiColide();
+        $transpiler->setAliasses([User::class => 'users', 'users.id' => 'users.UserId']);
+        $expr = new Expression(fn(User $u) => $u->id == $var);
+        $transpilation = $transpiler->transpile($expr);
+        $this->assertInstanceOf(AnsiSqlTranspilation::class, $transpilation);
+        $this->assertIsString($transpilation->statement);
+        $this->assertIsArray($transpilation->bindings);
+    }
 }
+

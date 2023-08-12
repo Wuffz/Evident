@@ -2,3 +2,4 @@
 /vendor
 /packages/*/vendor
 /tmp
+*.old
