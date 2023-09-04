@@ -4,12 +4,12 @@ namespace Evident\Lingua\Tests\Unit;
 
 use Evident\Lingua\DeleteQueryBuilder;
 
-use PHPUnit\Framework\TestCase;
+class DeleteQueryTest extends SqlTestCase
+{
 
-class QueryBuilderTest extends SqlTestCase {
+    public function testDeleteQuery()
+    {
 
-    public function testDeleteQuery() {
-        
         $num = 1;
         $queryBuilder = new DeleteQueryBuilder($this->pdo, $this->transpiler);
         $query = $queryBuilder
@@ -22,6 +22,6 @@ class QueryBuilderTest extends SqlTestCase {
             'DELETE FROM users JOIN books ON users.id = books.user_id WHERE books.amount_sold > 100',
             $query->getQuery()
         );
-    }    
-    
+    }
+
 }

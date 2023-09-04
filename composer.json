@@ -16,14 +16,16 @@
             "Evident\\": "src/",
             "Evident\\Bunch\\": "packages/Bunch/src",
             "Evident\\Expressio\\": "packages/Expressio/src",
-            "Evident\\Lingua\\": "packages/Lingua/src"
+            "Evident\\Lingua\\": "packages/Lingua/src",
+            "Evident\\Matter\\": "packages/Matter/src"
         }
     },
     "autoload-dev": {
         "psr-4": {
             "Evident\\Bunch\\Tests\\": "packages/Bunch/tests",
             "Evident\\Expressio\\Tests\\": "packages/Expressio/tests",
-            "Evident\\Lingua\\Tests\\": "packages/Lingua/tests"
+            "Evident\\Lingua\\Tests\\": "packages/Lingua/tests",
+            "Evident\\Matter\\Tests\\": "packages/Matter/tests"
         }
     },
     "scripts": {
